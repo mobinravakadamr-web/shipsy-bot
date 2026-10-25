@@ -23,23 +23,24 @@ def send_telegram_message(message_text):
 
 @app.route('/')
 def home():
-    return "Shipsy Automation Server is Live!"
+    # Jaise hi aap browser mein yeh link kholenge, Telegram par test message aur notification aa jayegi
+    send_telegram_message("🚨 Shipsy Automation: Server is live and ready for Excel data!")
+    return "Shipsy Automation Bot is Live and Ready!"
 
 @app.route('/webhook', methods=['GET', 'POST'])
 def webhook():
     try:
         if request.method == 'GET':
-            # Jab aap browser mein kholenge toh yeh test message bhej dega
-            send_telegram_message("🚨 Test Alert: Shipsy Webhook is connected successfully!")
-            return "Test message sent to Telegram successfully!", 200
+            send_telegram_message("📊 Excel sheet request received via browser link!")
+            return "Excel request processed!", 200
             
         data = request.json
-        print("Received Shipsy Data:", data)
+        print("Received Data:", data)
         
-        alert_text = f"🚨 Shipsy Alert!\nNew Data Received:\n{data}"
+        alert_text = f"📁 Shipsy Excel Update:\n{data}"
         send_telegram_message(alert_text)
         
-        return jsonify({"status": "success", "message": "Alert sent to Telegram!"}), 200
+        return jsonify({"status": "success", "message": "Sent to Telegram!"}), 200
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 400
 
