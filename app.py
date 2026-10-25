@@ -1,20 +1,47 @@
-from flask import Flask, request
+import os
+import requests
+from flask import Flask, request, jsonify
 
 app = Flask(__name__)
 
-@app.route("/")
+# Aapka Telegram Bot Token aur Chat ID
+TELEGRAM_BOT_TOKEN = "8654386632:AAHKh05tVVEkjvsA4uHHgyDR6WWBdo5QeK0"
+TELEGRAM_CHAT_ID = "6470854341"
+
+def send_telegram_message(message_text):
+    url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
+    payload = {
+        "chat_id": TELEGRAM_CHAT_ID,
+        "text": message_text
+    }
+    try:
+        response = requests.post(url, json=payload)
+        return response.json()
+    except Exception as e:
+        print(f"Error sending message: {e}")
+        return None
+
+@app.route('/')
 def home():
-    return "Shipsy Automation Bot is Live and Ready!"
+    return "Shipsy Automation Server is Live!"
 
-@app.route("/webhook", methods=["POST"])
-def whatsapp_webhook():
-    incoming_msg = request.form.get("Body")
-    sender = request.form.get("From")
-    print(f"Message mila: {incoming_msg} (Sender: {sender})")
-    
-    # Yahan hum Shipsy data aur WhatsApp reply ka logic aage jurenge
-    return "<Response><Message>Message mil gaya hai!</Message></Response>", 200
+@app.route('/webhook', methods=['POST'])
+def webhook():
+    try:
+        data = request.json
+        print("Received Shipsy Data:", data)
+        
+        # Yahan aap Shipsy ke data se message bana sakte hain
+        alert_text = f"🚨 Shipsy Alert!\nNew Data Received:\n{data}"
+        
+        # Telegram par message bhejega
+        send_telegram_message(alert_text)
+        
+        return jsonify({"status": "success", "message": "Alert sent to Telegram!"}), 200
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 400
 
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=10000)
+if __name__ == '__main__':
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host='0.0.0.0', port=port)
     
