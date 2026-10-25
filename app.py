@@ -25,16 +25,18 @@ def send_telegram_message(message_text):
 def home():
     return "Shipsy Automation Server is Live!"
 
-@app.route('/webhook', methods=['POST'])
+@app.route('/webhook', methods=['GET', 'POST'])
 def webhook():
     try:
+        if request.method == 'GET':
+            # Jab aap browser mein kholenge toh yeh test message bhej dega
+            send_telegram_message("🚨 Test Alert: Shipsy Webhook is connected successfully!")
+            return "Test message sent to Telegram successfully!", 200
+            
         data = request.json
         print("Received Shipsy Data:", data)
         
-        # Yahan aap Shipsy ke data se message bana sakte hain
         alert_text = f"🚨 Shipsy Alert!\nNew Data Received:\n{data}"
-        
-        # Telegram par message bhejega
         send_telegram_message(alert_text)
         
         return jsonify({"status": "success", "message": "Alert sent to Telegram!"}), 200
